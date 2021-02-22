@@ -3,27 +3,35 @@ class ExamException(Exception):
 
 class CSVTimeSeriesFile:
 
+    #inizializziamo l'oggetto
     def __init__ (self, name):
        self.name = name
 
     def get_data(self):
         
-        try: 
+        try: #apriamo il file
             file = open(self.name, "r")
-        except Exception as e:
+        except Exception as e: #se riscontriamo problemi allora alziamo un'eccezione
             raise ExamException('Errore apertura file: {}' .format(e))
 
-        lista = []
 
-        epochprec = None
 
+        ### Inizializziamo array e variabile ###
+
+        lista = [] #per comodità l'array è scritto in italiano siccome "list" è un comando
+        
+        epochprec = None #variabile che serve per "salvare" l'epoch precedente
+
+
+        #
         for line in file:
+
             element = line.split(",")
 
             if len(element) > 1:
 
                 try:
-                    element[0] = round(float(element[0]))
+                    element[0] = float(element[0])
                     element[1] = float(element[1])
                 except:
                     print('Riga non valida')
@@ -50,7 +58,7 @@ def hourly_trend_changes(time_series):
     counter = 0
 
     for element in time_series:
-        if element[0]/3600 == control_h:
+        if round(element[0]/3600) == control_h:
             if (temp_2 < temp_1 and temp_1 > element[1]) or (temp_2 > temp_1 and temp_1 < element[1]):
                 counter += 1
             
@@ -62,11 +70,11 @@ def hourly_trend_changes(time_series):
             temp_1 = element[1]
             temp_2 = temp_1
             
-            control_h = element[0]/3600
+            control_h = round(element[0]/3600)
         else: 
             inversion.append(counter)
             counter = 0
-            control_h = element[0]/3600
+            control_h = round(element[0]/3600)
             
             if (temp_2 < temp_1 and temp_1 > element[1]) or (temp_2 > temp_1 and temp_1 < element[1]):
                 counter += 1
@@ -75,6 +83,7 @@ def hourly_trend_changes(time_series):
                 temp_2 = temp_1
                 temp_1 = element[1]
     
+    inversion.append(counter)
     return(inversion)
 
 
