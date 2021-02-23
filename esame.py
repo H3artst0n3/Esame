@@ -77,40 +77,90 @@ class CSVTimeSeriesFile:
 
 def hourly_trend_changes(time_series):
 
-    inversion = []
+    ### Inizializziamo array e variabili ###
 
-    control_h = None
-    temp_1 = None
-    temp_2 = None
-    counter = 0
+    inversion = [] # array dove verranno salvate le inversioni di trend
 
-    if not len(time_series) == 0:
-        for element in time_series:
-            if round(element[0]/3600) == control_h:
+    control_h = None # variabile che serve per "salvare" l'ora precedente e che ci servirà come controllo
+
+    # per comodità salviamo le due misurazioni precedenti a quella presa in considerazione così da poter stabilire se c'è un'inversione di trend o meno; in questo caso possiamo dire che la temperatura della riga interessata, element[1], la possiamo definire come un "N";
+
+    temp_1 = None # questa variabile corrisponderebbe al valore "N - 1"
+    
+    temp_2 = None # questa variabile corrisponderebbe al valore "N - 2"
+    
+    counter = 0 # variabile che andrà a salvare il numero di inversioni di ogni ora
+
+
+
+    ### Analizziamo i dati ###
+
+    # dobbiamo controllare che il file non sia un file vuoto
+    if not len(time_series) == 0: # perciò si pone la sua lunghezza diversa da zero
+
+        for element in time_series: # per ogni elemento nel file facciamo un controllo
+
+            # prima di tutto dobbiamo controllare che i dati siano relativi alla stessa ora
+            if round(element[0]/3600) == control_h: # dunque prendiamo in considerazione l'epoch corrente e lo dividiamo per 3600 (secondi in un'ora) per vedere se la temperatura registrata appartiene alla stessa ora della misurazione registrata precedentemente, infine arrotondiamo il risultato con il metodo rounìd come richiesto dalle specifiche presenti nel tema d'esame
+
+                # ora passato il controllo dobbiamo stabilire se è presente un'inversione di trend o meno. L'idea è che se tre valori, a, b, c, sono crescenti, allora questi sono: a < b < c; perciò abbiamo un'inversione nel caso b > c; analogamente per il caso di decrescenza dove avremo a > b > c ottenendo un'inversione nel caso b < c
+
                 if (temp_2 < temp_1 and temp_1 > element[1]) or (temp_2 > temp_1 and temp_1 < element[1]):
-                    counter += 1
+                    # nel caso si presentasse un' inversione di trend:
+                    counter += 1 # incrementiamo il contatore di uno
                 
+                # nel caso  
                 if not temp_1 == element[1]:
+
                     temp_2 = temp_1
+
                     temp_1 = element[1]
 
+
             elif control_h == None:
+
                 temp_1 = element[1]
+
                 temp_2 = temp_1
                 
                 control_h = round(element[0]/3600)
+            
+            
             else: 
+
                 inversion.append(counter)
+
                 counter = 0
+
                 control_h = round(element[0]/3600)
+
                 
                 if (temp_2 < temp_1 and temp_1 > element[1]) or (temp_2 > temp_1 and temp_1 < element[1]):
+                    
                     counter += 1
                 
+
                 if not temp_1 == element[1]:
+                    
                     temp_2 = temp_1
+                    
                     temp_1 = element[1]
         
         inversion.append(counter)
+
     return(inversion)
 
+
+oggetto = CSVTimeSeriesFile('data.csv')
+
+print('         Errori        ')
+print('-----------------------')
+
+value = hourly_trend_changes(oggetto.get_data())
+
+print('  Ora  |  Inversioni  ')
+print('----------------------')
+i = 0
+for element in value:
+    i += 1
+    print('  {}   |  {}  ' .format(i, element)) 
